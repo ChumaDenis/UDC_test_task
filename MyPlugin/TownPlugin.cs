@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace MyPlugin
 {
@@ -24,17 +25,13 @@ namespace MyPlugin
             Entity region = localPluginContext.CurrentUserService.Retrieve(regionRef.LogicalName, regionRef.Id, new ColumnSet("crfe2_people"));
 
             var people = localPluginContext.Latest.GetAttributeValue<int?>("crfe2_people");
-            var sum = people ?? 0;
-            if (region.Attributes.Contains("crfe2_people") && (int)region.Attributes["crfe2_people"] >= 0)
-            {
-                sum += (int)region.Attributes["crfe2_people"];
-                region.Attributes["crfe2_people"] = sum;
-            }
-            else
-            {
-                region.Attributes.Add("crfe2_people", sum);
-            }
+
+            var sum = GetSumOfTown(region, localPluginContext.CurrentUserService);
+            region.Attributes["crfe2_people"] = sum;
+
             localPluginContext.CurrentUserService.Update(region);
+
+
             if (localPluginContext.Target.Contains("crfe2_region"))
             {
                 Entity image = new Entity();
@@ -44,16 +41,41 @@ namespace MyPlugin
                     people = image.GetAttributeValue<int>("crfe2_people");
                     regionRef = image.GetAttributeValue<EntityReference>("crfe2_region");
                     region = localPluginContext.CurrentUserService.Retrieve(regionRef.LogicalName, regionRef.Id, new ColumnSet("crfe2_people", "crfe2_name"));
-                    
-                    if (region.Attributes.Contains("crfe2_people"))
-                    {
-                        region.Attributes["crfe2_people"] = (int)region.Attributes["crfe2_people"] - people;
-                    }
+
+                    region.Attributes["crfe2_people"] = GetSumOfTown(region, localPluginContext.CurrentUserService);
                     localPluginContext.CurrentUserService.Update(region);
                 }
             }
 
-
+            
         }
+
+        private int GetSumOfTown(Entity region, IOrganizationService _service)
+        {
+            int sum = 0;
+
+            QueryExpression query = new QueryExpression()
+            {
+                EntityName = "crfe2_town",
+                ColumnSet= new ColumnSet("crfe2_people"),
+                Criteria = new FilterExpression()
+                {
+                    FilterOperator = LogicalOperator.And,
+                    Conditions = { new ConditionExpression("crfe2_region", ConditionOperator.Equal, region.Id) }
+                }
+            };
+
+            EntityCollection entityCollection = _service.RetrieveMultiple(query);
+           
+            foreach (var i in entityCollection.Entities)
+            {
+                if (region.Attributes.Contains("crfe2_people") && (int)region.Attributes["crfe2_people"] >= 0)
+                {
+                    sum += (int)i.Attributes["crfe2_people"];
+                }
+            }
+            return sum;
+        }
+
     }
 }
