@@ -27,21 +27,15 @@ namespace MyPlugin
 
             localPluginContext.CurrentUserService.Update(region);
 
-
-            if (localPluginContext.Target.Contains("crfe2_region"))
+            if (localPluginContext.Target.Contains("crfe2_region") && _context.PreEntityImages.ContainsKey("PreImage"))
             {
-                if (_context.PreEntityImages.ContainsKey("PreImage"))
-                {
-                    Entity image = (Entity)_context.PreEntityImages["PreImage"];
-                    regionRef = image.GetAttributeValue<EntityReference>("crfe2_region");
-                    region = localPluginContext.CurrentUserService.Retrieve(regionRef.LogicalName, regionRef.Id, new ColumnSet("crfe2_people", "crfe2_name"));
+                Entity image = (Entity)_context.PreEntityImages["PreImage"];
+                regionRef = image.GetAttributeValue<EntityReference>("crfe2_region");
+                region = localPluginContext.CurrentUserService.Retrieve(regionRef.LogicalName, regionRef.Id, new ColumnSet("crfe2_people", "crfe2_name"));
 
-                    region.Attributes["crfe2_people"] = GetSumOfTown(region, localPluginContext.CurrentUserService);
-                    localPluginContext.CurrentUserService.Update(region);
-                }
+                region.Attributes["crfe2_people"] = GetSumOfTown(region, localPluginContext.CurrentUserService);
+                localPluginContext.CurrentUserService.Update(region);
             }
-
-            
         }
 
         private int GetSumOfTown(Entity region, IOrganizationService _service)
