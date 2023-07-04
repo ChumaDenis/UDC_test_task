@@ -107,7 +107,6 @@
     <Compile Include="PluginBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TownPlugin.cs" />
-    <Compile Include="TownPrePlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bin\coretools\CrmSvcUtil.exe" />
