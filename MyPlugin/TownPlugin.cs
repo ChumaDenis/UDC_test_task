@@ -26,8 +26,7 @@ namespace MyPlugin
 
             var people = localPluginContext.Latest.GetAttributeValue<int?>("crfe2_people");
 
-            var sum = GetSumOfTown(region, localPluginContext.CurrentUserService);
-            region.Attributes["crfe2_people"] = sum;
+            region.Attributes["crfe2_people"] = GetSumOfTown(region, localPluginContext.CurrentUserService);
 
             localPluginContext.CurrentUserService.Update(region);
 
